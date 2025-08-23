@@ -82,8 +82,8 @@ class MultiheadAttention(nn.Module):
     def __init__(self, n_head, head_size):
         super().__init__()
         self.heads = nn.ModuleList([Head(head_size) for _ in range(n_head)])
-        self.proj = nn.Linear(n_embd, n_embd)
-        self.dropout = nn.Dropout(dropout)
+        self.proj = nn.Linear(n_embd, n_embd) # Projection layer to combine information
+        self.dropout = nn.Dropout(dropout) # Regularization to prevent overfitting
         
     def forward(self, x):
         out = torch.cat([h(x) for h in self.heads], dim = -1)
@@ -98,7 +98,7 @@ class FeedForward(nn.Module):
         self.net = nn.Sequential(
             nn.Linear(n_embd, 4 * n_embd),
             nn.ReLU(),
-            nn.Linear(4 * n_embd, n_embd),
+            nn.Linear(4 * n_embd, n_embd), # Reduce dimension for residual connection
             nn.Dropout(dropout)
         )
         
@@ -134,7 +134,7 @@ class BigramLanguageModel(nn.Module):
         B, T = idx.shape
         tok_emb = self.token_embedding_table(idx)
         pos_emb = self.position_embedding_table(torch.arange(T, device = idx.device))
-        x = tok_emb + pos_emb
+        x = tok_emb + pos_emb # [batch_size, block_size, n_embd]
         x = self.blocks(x)
         x = self.ln_f(x)
         logits = self.lm_head(x)
